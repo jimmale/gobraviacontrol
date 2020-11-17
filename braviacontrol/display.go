@@ -52,6 +52,24 @@ func NewDisplay(ip net.IP, port uint) (*Display, error) {
 	return &output, nil
 }
 
+
+func (d *Display) SetPowerStatus(status PowerStatus) error {
+	c := Control{
+		messageType: "C",
+		fourCC:      "POWR",
+		parameter:   string(status),
+	}
+	ans, err := d.sendControlMessage(&c)
+	if err != nil{
+		return err
+	}
+	if ans.isError(){
+		return errors.New("the display returned an error")
+	}
+	return nil
+}
+
+// Close closes communication with the display.
 func (d *Display) Close(){
 	d.lock.Lock()
 	defer d.lock.Unlock()
@@ -59,7 +77,6 @@ func (d *Display) Close(){
 	close(d.controlMessages)
 	close(d.answers)
 	d.isClosed = true
-
 }
 
 // This is intended to be run in a separate goroutine.
@@ -87,7 +104,7 @@ func (d *Display) dealWithMessagesFromDisplay(){
 func (d *Display) sendMessagesToDisplay(){
 	for {
 		controlMessage := <-d.controlMessages
-		_, _ = d.connection.Write([]byte(controlMessage.RawContent))
+		_, _ = d.connection.Write([]byte(controlMessage.getRawMessage()))
 	}
 }
 

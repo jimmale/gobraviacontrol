@@ -28,7 +28,7 @@ type Display struct {
 }
 
 
-// NewDisplay initializes a connection to a display
+// NewDisplay initializes a connection to a display over a TCP socket
 func NewDisplay(ip net.IP, port uint) (*Display, error) {
 	connString := fmt.Sprintf("%s:%d", ip.String(), port)
 	conn, err := net.Dial("tcp", connString)
@@ -46,13 +46,13 @@ func NewDisplay(ip net.IP, port uint) (*Display, error) {
 		controlMessages: controlChannel,
 	}
 
-	go output.dealWithMessagesFromDisplay()
+	go output.routeMessagesFromDisplay()
 	go output.sendMessagesToDisplay()
 
 	return &output, nil
 }
 
-
+// SetPowerStatus can be used to turn the display on or off (aka standby mode)
 func (d *Display) SetPowerStatus(status PowerStatus) error {
 	c := Control{
 		messageType: "C",
@@ -63,7 +63,24 @@ func (d *Display) SetPowerStatus(status PowerStatus) error {
 	if err != nil{
 		return err
 	}
-	if ans.isError(){
+	if ans.IsError(){
+		return errors.New("the display returned an error")
+	}
+	return nil
+}
+
+func (d *Display) TogglePowerStatus() error {
+	c := Control{
+		messageType: "C",
+		fourCC:      "TPOW",
+		parameter:   "################",
+	}
+
+	ans, err := d.sendControlMessage(&c)
+	if err != nil{
+		return err
+	}
+	if ans.IsError(){
 		return errors.New("the display returned an error")
 	}
 	return nil
@@ -81,7 +98,7 @@ func (d *Display) Close(){
 
 // This is intended to be run in a separate goroutine.
 // Eventually it will route Answer messages and answer messages to their appropriate destinations
-func (d *Display) dealWithMessagesFromDisplay(){
+func (d *Display) routeMessagesFromDisplay(){
 
 	// bufio.Scanner to buffer reads from the socket, and split reads on newline chars
 	scanner := bufio.NewScanner(d.connection)
@@ -104,7 +121,7 @@ func (d *Display) dealWithMessagesFromDisplay(){
 func (d *Display) sendMessagesToDisplay(){
 	for {
 		controlMessage := <-d.controlMessages
-		_, _ = d.connection.Write([]byte(controlMessage.getRawMessage()))
+		_, _ = d.connection.Write([]byte(controlMessage.GetRawMessage()))
 	}
 }
 

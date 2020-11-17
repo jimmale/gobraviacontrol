@@ -10,7 +10,8 @@ It implements the Simple IP control protocol, as publicly documented [here](http
 Due to the current pandemic, I do not have access to an _actual_ display to test this with.
 
 ## Goals
-[X] Send Commands
-[x] Receive Answers to the Commands
-[X] Correctly match Answers to the Commands that caused them
-[ ] Allows routing of Notification messages from the TV
+- [X] Send Commands
+- [x] Receive Answers to the Commands
+- [X] Correctly match Answers to the Commands that caused them
+- [ ] Allows routing of Notification messages from the TV
+- [ ] Full implementation of the command set

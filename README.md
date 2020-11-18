@@ -22,9 +22,12 @@ Due to the current pandemic, I do not have access to an _actual_ display to test
 package main
 
 import (
-	"github.com/jmale1/gobraviacontrol/braviacontrol"
-	"net"
+
+"github.com/jmale1/gobraviacontrol/braviacontrol"
+"net"
+"time"
 )
+
 
 func main(){
     display, _ := braviacontrol.NewDisplay(net.IP("192.168.1.42"), 8080)
@@ -32,6 +35,8 @@ func main(){
     _ = display.SetInput(braviacontrol.HDMI, 2) // Switch to HDMI 2 input
     _ = display.VolumeUp() // Turn the volume up
     _ = display.VolumeUp() // Turn the volume up again
+    time.Sleep(8 * time.Hour)
+    display.SetPowerStatus(braviacontrol.POWER_OFF) // Turn off the display
     display.Close()
 }
 ```

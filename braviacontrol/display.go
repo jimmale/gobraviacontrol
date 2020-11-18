@@ -27,7 +27,6 @@ type Display struct {
 	isClosed bool
 }
 
-
 // NewDisplay initializes a connection to a display over a TCP socket
 func NewDisplay(ip net.IP, port uint) (*Display, error) {
 	connString := fmt.Sprintf("%s:%d", ip.String(), port)
@@ -52,6 +51,16 @@ func NewDisplay(ip net.IP, port uint) (*Display, error) {
 	return &output, nil
 }
 
+// Close closes communication with the display.
+func (d *Display) Close() {
+	d.lock.Lock()
+	defer d.lock.Unlock()
+	_ = d.connection.Close()
+	close(d.controlMessages)
+	close(d.answers)
+	d.isClosed = true
+}
+
 // SetPowerStatus can be used to turn the display on or off (aka standby mode)
 func (d *Display) SetPowerStatus(status PowerStatus) error {
 	c := Control{
@@ -60,10 +69,10 @@ func (d *Display) SetPowerStatus(status PowerStatus) error {
 		parameter:   string(status),
 	}
 	ans, err := d.sendControlMessage(&c)
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	if ans.IsError(){
+	if ans.IsError() {
 		return errors.New("the display returned an error")
 	}
 	return nil
@@ -77,28 +86,28 @@ func (d *Display) TogglePowerStatus() error {
 	}
 
 	ans, err := d.sendControlMessage(&c)
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	if ans.IsError(){
+	if ans.IsError() {
 		return errors.New("the display returned an error")
 	}
 	return nil
 }
 
-// Close closes communication with the display.
-func (d *Display) Close(){
-	d.lock.Lock()
-	defer d.lock.Unlock()
-	_ = d.connection.Close()
-	close(d.controlMessages)
-	close(d.answers)
-	d.isClosed = true
+func (d *Display) VolumeUp() error {
+	// TODO implement this
+	return nil
+}
+
+func (d *Display) SetInput(source InputSource, number uint) error {
+	// TODO implement this
+	return nil
 }
 
 // This is intended to be run in a separate goroutine.
 // Eventually it will route Answer messages and answer messages to their appropriate destinations
-func (d *Display) routeMessagesFromDisplay(){
+func (d *Display) routeMessagesFromDisplay() {
 
 	// bufio.Scanner to buffer reads from the socket, and split reads on newline chars
 	scanner := bufio.NewScanner(d.connection)
@@ -109,8 +118,8 @@ func (d *Display) routeMessagesFromDisplay(){
 
 		if ANSWER_MESSAGE_REGEX.MatchString(rawmessage) {
 			var a = Answer{
-				RawContent: rawmessage,
-				Timestamp:  timestamp,
+				rawContent: rawmessage,
+				timestamp:  timestamp,
 			}
 			d.answers <- &a
 		}
@@ -118,13 +127,12 @@ func (d *Display) routeMessagesFromDisplay(){
 }
 
 // This is intended to be run in a separate goroutine.
-func (d *Display) sendMessagesToDisplay(){
+func (d *Display) sendMessagesToDisplay() {
 	for {
 		controlMessage := <-d.controlMessages
 		_, _ = d.connection.Write([]byte(controlMessage.GetRawMessage()))
 	}
 }
-
 
 // This is a convenience wrapper that sends a Control message and gets its matching Answer
 func (d *Display) sendControlMessage(message *Control) (*Answer, error) {

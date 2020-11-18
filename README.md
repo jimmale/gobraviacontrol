@@ -27,11 +27,11 @@ import (
 )
 
 func main(){
-	display, _ := braviacontrol.NewDisplay(net.IP("192.168.1.42"), 8080)
-    display.SetPowerStatus(braviacontrol.POWER_ON) // Turn on the display
-    display.SetInput(braviacontrol.HDMI, 2) // Switch to HDMI 2 input
-	display.VolumeUp() // Turn the volume up
-    display.VolumeUp() // Turn the volume up again
+    display, _ := braviacontrol.NewDisplay(net.IP("192.168.1.42"), 8080)
+    _ = display.SetPowerStatus(braviacontrol.POWER_ON) // Turn on the display
+    _ = display.SetInput(braviacontrol.HDMI, 2) // Switch to HDMI 2 input
+    _ = display.VolumeUp() // Turn the volume up
+    _ = display.VolumeUp() // Turn the volume up again
     display.Close()
 }
 ```

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/jmale1/gobraviacontrol/braviacontrol"
+	"github.com/jimmale/gobraviacontrol/braviacontrol"
 	"net"
 )
 

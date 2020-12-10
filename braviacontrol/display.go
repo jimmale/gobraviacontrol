@@ -101,7 +101,21 @@ func (d *Display) VolumeUp() error {
 }
 
 func (d *Display) SetInput(source InputSource, number uint) error {
-	// TODO implement this
+
+	parameter := fmt.Sprintf("%s%06d", source, number)
+
+	c := Control{
+		messageType: "C",
+		fourCC:      "INPT",
+		parameter:   parameter,
+	}
+	ans, err := d.sendControlMessage(&c)
+	if err != nil {
+		return err
+	}
+	if ans.IsError() {
+		return errors.New("the display returned an error")
+	}
 	return nil
 }
 

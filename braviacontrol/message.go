@@ -57,7 +57,6 @@ func (a *Answer) GetTimeStamp() time.Time {
 }
 
 type PowerStatus string
-
 const (
 	POWER_OFF PowerStatus = "0000000000000000"
 	POWER_ON  PowerStatus = "0000000000000001"
@@ -65,7 +64,6 @@ const (
 )
 
 type InputSource string
-
 const (
 	HDMI             InputSource = "00000001"
 	COMPONENT        InputSource = "00000004"

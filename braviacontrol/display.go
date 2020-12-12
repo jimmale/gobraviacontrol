@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/jimmale/gobraviacontrol/braviacontrol/inputsource"
+	"github.com/jimmale/gobraviacontrol/braviacontrol/ircccodes"
+	"github.com/jimmale/gobraviacontrol/braviacontrol/powerstatus"
 	"net"
 	"sync"
 	"time"
@@ -61,8 +64,29 @@ func (d *Display) Close() {
 	d.isClosed = true
 }
 
+// ╔═════════════════════════════════════════════════════════════════════════╗
+// ║                     Commands provided by the display                    ║
+// ╚═════════════════════════════════════════════════════════════════════════╝
+
+func (d *Display) SetIrccCode(code ircccodes.IRCommand) error {
+	zeroPaddedCode := fmt.Sprintf("%016d", code)
+	c := Control{
+		messageType: "C",
+		fourCC:      "IRCC",
+		parameter:   zeroPaddedCode,
+	}
+	ans, err := d.sendControlMessage(&c)
+	if err != nil {
+		return err
+	}
+	if ans.IsError() {
+		return errors.New("the display returned an error")
+	}
+	return nil
+}
+
 // SetPowerStatus can be used to turn the display on or off (aka standby mode)
-func (d *Display) SetPowerStatus(status PowerStatus) error {
+func (d *Display) SetPowerStatus(status powerstatus.PowerStatus) error {
 	c := Control{
 		messageType: "C",
 		fourCC:      "POWR",
@@ -100,7 +124,12 @@ func (d *Display) VolumeUp() error {
 	return nil
 }
 
-func (d *Display) SetInput(source InputSource, number uint) error {
+func (d *Display) VolumeDown() error {
+	// TODO implement this
+	return nil
+}
+
+func (d *Display) SetInput(source inputsource.InputSource, number uint) error {
 
 	parameter := fmt.Sprintf("%s%06d", source, number)
 

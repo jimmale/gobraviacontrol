@@ -16,6 +16,26 @@ Due to the current pandemic, I do not have access to an _actual_ display to test
 - [ ] Allows routing of Notification messages from the TV
 - [ ] Full implementation of the command set
 
+
+## Commands Implemented (aka to do list)
+- [x] setIrccCode
+- [x] setPowerStatus
+- [ ] getPowerStatus
+- [x] togglePowerStatus
+- [ ] setAudioVolume
+- [ ] getAudioVolume
+- [ ] setAudioMute
+- [ ] getAudioMute
+- [x] setInput
+- [ ] getInput
+- [ ] setPictureMute
+- [ ] getPictureMute
+- [ ] togglePictureMute
+- [ ] getBroadcastAddress
+- [ ] getMacAddress
+- [ ] setSceneSetting
+- [ ] getSceneSetting
+
 ## Example Code
 
 ```go
@@ -24,6 +44,8 @@ package main
 import (
 
 "github.com/jimmale/gobraviacontrol/braviacontrol"
+"github.com/jimmale/gobraviacontrol/braviacontrol/inputsource"
+"github.com/jimmale/gobraviacontrol/braviacontrol/powerstatus"
 "net"
 "time"
 )
@@ -31,12 +53,12 @@ import (
 
 func main(){
     display, _ := braviacontrol.NewDisplay(net.IP("192.168.1.42"), 8080)
-    _ = display.SetPowerStatus(braviacontrol.POWER_ON) // Turn on the display
-    _ = display.SetInput(braviacontrol.HDMI, 2) // Switch to HDMI 2 input
+    _ = display.SetPowerStatus(powerstatus.POWER_ON) // Turn on the display
+    _ = display.SetInput(inputsource.HDMI, 2) // Switch to HDMI 2 input
     _ = display.VolumeUp() // Turn the volume up
     _ = display.VolumeUp() // Turn the volume up again
     time.Sleep(8 * time.Hour)
-    display.SetPowerStatus(braviacontrol.POWER_OFF) // Turn off the display
+    display.SetPowerStatus(powerstatus.POWER_OFF) // Turn off the display
     display.Close()
 }
 ```

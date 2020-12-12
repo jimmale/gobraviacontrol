@@ -55,17 +55,3 @@ func (a *Answer) GetRawMessage() string {
 func (a *Answer) GetTimeStamp() time.Time {
 	return a.timestamp
 }
-
-type PowerStatus string
-const (
-	POWER_OFF PowerStatus = "0000000000000000"
-	POWER_ON  PowerStatus = "0000000000000001"
-	ERROR     PowerStatus = "FFFFFFFFFFFFFFFF"
-)
-
-type InputSource string
-const (
-	HDMI             InputSource = "00000001"
-	COMPONENT        InputSource = "00000004"
-	SCREEN_MIRRORING InputSource = "00000005"
-)

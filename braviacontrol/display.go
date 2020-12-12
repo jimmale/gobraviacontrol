@@ -64,6 +64,49 @@ func (d *Display) Close() {
 	d.isClosed = true
 }
 
+// This is intended to be run in a separate goroutine.
+// Eventually it will route Answer messages and answer messages to their appropriate destinations
+func (d *Display) routeMessagesFromDisplay() {
+
+	// bufio.Scanner to buffer reads from the socket, and split reads on newline chars
+	scanner := bufio.NewScanner(d.connection)
+
+	for scanner.Scan() {
+		rawmessage := scanner.Text() + "\n" // we need to add the newline back on
+		timestamp := time.Now()
+
+		if ANSWER_MESSAGE_REGEX.MatchString(rawmessage) {
+			var a = Answer{
+				rawContent: rawmessage,
+				timestamp:  timestamp,
+			}
+			d.answers <- &a
+		}
+	}
+}
+
+// This is intended to be run in a separate goroutine.
+func (d *Display) sendMessagesToDisplay() {
+	for {
+		controlMessage := <-d.controlMessages
+		_, _ = d.connection.Write([]byte(controlMessage.GetRawMessage()))
+	}
+}
+
+// This is a convenience wrapper that sends a Control message and gets its matching Answer
+func (d *Display) sendControlMessage(message *Control) (*Answer, error) {
+	d.lock.Lock()
+	defer d.lock.Unlock()
+	if d.isClosed {
+		err := errors.New("the connection to the display has been closed")
+		return nil, err
+	}
+	d.controlMessages <- message
+	answer := <-d.answers
+	return answer, nil
+}
+
+
 // ╔═════════════════════════════════════════════════════════════════════════╗
 // ║                     Commands provided by the display                    ║
 // ╚═════════════════════════════════════════════════════════════════════════╝
@@ -100,6 +143,29 @@ func (d *Display) SetPowerStatus(status powerstatus.PowerStatus) error {
 		return errors.New("the display returned an error")
 	}
 	return nil
+}
+
+func (d *Display) GetPowerStatus() (powerstatus.PowerStatus, error){
+	c := Control{
+		messageType: "E",
+		fourCC:      "POWR",
+		parameter:   string(powerstatus.ENQUIRY),
+	}
+
+	ans, err := d.sendControlMessage(&c)
+	if err != nil {
+		return powerstatus.ERROR, err
+	}
+	if ans.IsError() {
+		return powerstatus.ERROR, errors.New("the display returned an error")
+	}
+	if ans.GetParameter() == string(powerstatus.POWER_ON){
+		return powerstatus.POWER_ON, nil
+	}
+	if ans.GetParameter() == string(powerstatus.POWER_OFF){
+		return powerstatus.POWER_OFF, nil,
+	}
+	return powerstatus.ERROR, errors.New("the display returned a malformed response")
 }
 
 func (d *Display) TogglePowerStatus() error {
@@ -148,44 +214,3 @@ func (d *Display) SetInput(source inputsource.InputSource, number uint) error {
 	return nil
 }
 
-// This is intended to be run in a separate goroutine.
-// Eventually it will route Answer messages and answer messages to their appropriate destinations
-func (d *Display) routeMessagesFromDisplay() {
-
-	// bufio.Scanner to buffer reads from the socket, and split reads on newline chars
-	scanner := bufio.NewScanner(d.connection)
-
-	for scanner.Scan() {
-		rawmessage := scanner.Text() + "\n" // we need to add the newline back on
-		timestamp := time.Now()
-
-		if ANSWER_MESSAGE_REGEX.MatchString(rawmessage) {
-			var a = Answer{
-				rawContent: rawmessage,
-				timestamp:  timestamp,
-			}
-			d.answers <- &a
-		}
-	}
-}
-
-// This is intended to be run in a separate goroutine.
-func (d *Display) sendMessagesToDisplay() {
-	for {
-		controlMessage := <-d.controlMessages
-		_, _ = d.connection.Write([]byte(controlMessage.GetRawMessage()))
-	}
-}
-
-// This is a convenience wrapper that sends a Control message and gets its matching Answer
-func (d *Display) sendControlMessage(message *Control) (*Answer, error) {
-	d.lock.Lock()
-	defer d.lock.Unlock()
-	if d.isClosed {
-		err := errors.New("the connection to the display has been closed")
-		return nil, err
-	}
-	d.controlMessages <- message
-	answer := <-d.answers
-	return answer, nil
-}

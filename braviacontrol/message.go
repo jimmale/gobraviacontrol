@@ -36,6 +36,10 @@ type Answer struct {
 	timestamp  time.Time
 }
 
+func (a Answer) GetParameter() string{
+	return a.rawContent[7:23] // this is left hand inclusive, but right hand exclusive. hence [7:22] turns into [7:23]
+}
+
 // IsError returns if the Answer sent from the display indicates an error condition
 func (a Answer) IsError() bool {
 	return ErrorAnswerRegex.MatchString(a.rawContent)

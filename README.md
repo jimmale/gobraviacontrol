@@ -58,6 +58,8 @@ func main(){
     _ = display.VolumeUp() // Turn the volume up
     _ = display.VolumeUp() // Turn the volume up again
     time.Sleep(8 * time.Hour)
+    _ = display.VolumeDown() // Turn the volume down
+    _ = display.VolumeDown() // Turn the volume down again
     display.SetPowerStatus(powerstatus.POWER_OFF) // Turn off the display
     display.Close()
 }

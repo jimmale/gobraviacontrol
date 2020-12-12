@@ -20,7 +20,7 @@ Due to the current pandemic, I do not have access to an _actual_ display to test
 ## Commands Implemented (aka to do list)
 - [x] setIrccCode
 - [x] setPowerStatus
-- [ ] getPowerStatus
+- [x] getPowerStatus
 - [x] togglePowerStatus
 - [ ] setAudioVolume
 - [ ] getAudioVolume

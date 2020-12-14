@@ -34,4 +34,5 @@ jobs:
 #        env:
 #          GOROOT: /home/runner/go/
         run: |
-          go test ./... -v
+          pwd
+#          go test ./... -v

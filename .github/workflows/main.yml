@@ -34,3 +34,5 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           ls
+          go build . -o test-application
+          ./test-application

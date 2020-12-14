@@ -8,9 +8,13 @@ import (
 	"github.com/jimmale/gobraviacontrol/braviacontrol/ircccodes"
 	"github.com/jimmale/gobraviacontrol/braviacontrol/powerstatus"
 	"net"
+	"strconv"
 	"sync"
 	"time"
 )
+
+// This string is used as the command parameter when making an enquiry.
+const enquiry string = "################"
 
 type Display struct {
 
@@ -149,7 +153,7 @@ func (d *Display) GetPowerStatus() (powerstatus.PowerStatus, error){
 	c := Control{
 		messageType: "E",
 		fourCC:      "POWR",
-		parameter:   string(powerstatus.ENQUIRY),
+		parameter:   enquiry,
 	}
 
 	ans, err := d.sendControlMessage(&c)
@@ -163,7 +167,7 @@ func (d *Display) GetPowerStatus() (powerstatus.PowerStatus, error){
 		return powerstatus.POWER_ON, nil
 	}
 	if ans.GetParameter() == string(powerstatus.POWER_OFF){
-		return powerstatus.POWER_OFF, nil,
+		return powerstatus.POWER_OFF, nil
 	}
 	return powerstatus.ERROR, errors.New("the display returned a malformed response")
 }
@@ -185,15 +189,46 @@ func (d *Display) TogglePowerStatus() error {
 	return nil
 }
 
-func (d *Display) VolumeUp() error {
-	// TODO implement this
+func (d *Display) SetAudioVolume(volume uint) error {
+	zeroPaddedVolumeLevel := fmt.Sprintf("%016d", volume)
+
+	c := Control{
+		messageType: "C",
+		fourCC:      "VOLU",
+		parameter:   zeroPaddedVolumeLevel,
+	}
+
+	ans, err := d.sendControlMessage(&c)
+	if err != nil {
+		return err
+	}
+
+	if ans.IsError() {
+		return errors.New("the display returned an error")
+	}
 	return nil
 }
 
-func (d *Display) VolumeDown() error {
-	// TODO implement this
-	return nil
+func (d *Display) GetAudioVolume() (uint, error) {
+	c := Control{
+		messageType: "C",
+		fourCC:      "VOLU",
+		parameter:   enquiry,
+	}
+
+	ans, err := d.sendControlMessage(&c)
+	if err != nil {
+		return 0, err
+	}
+
+	if ans.IsError() {
+		return 0, errors.New("the display returned an error")
+	}
+
+	result, err := strconv.Atoi(ans.GetParameter())
+	return uint(result), err
 }
+
 
 func (d *Display) SetInput(source inputsource.InputSource, number uint) error {
 
@@ -214,3 +249,16 @@ func (d *Display) SetInput(source inputsource.InputSource, number uint) error {
 	return nil
 }
 
+// ╔═════════════════════════════════════════════════════════════════════════╗
+// ║                        Convenience Wrapper Methods                      ║
+// ╚═════════════════════════════════════════════════════════════════════════╝
+
+func (d *Display) VolumeUp() error {
+	// TODO implement this
+	return nil
+}
+
+func (d *Display) VolumeDown() error {
+	// TODO implement this
+	return nil
+}

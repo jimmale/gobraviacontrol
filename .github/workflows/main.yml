@@ -31,8 +31,12 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Run tests
-#        env:
-#          GOROOT: /home/runner/go/
+        env:
+          GOROOT: /home/runner/go/
         run: |
+          mkdir -p goroot/src/github.com/jimmale/gobraviacontrol
+          mv !(goroot) ./goroot/src/github.com/jimmale/gobraviacontrol
           pwd
+          ls
+
 #          go test ./... -v

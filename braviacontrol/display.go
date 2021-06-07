@@ -229,6 +229,54 @@ func (d *Display) GetAudioVolume() (uint, error) {
 	return uint(result), err
 }
 
+func (d *Display) SetAudioMute(mute bool) error {
+
+	var parameter string
+	if mute {
+		parameter = "0000000000000001"
+	} else {
+		parameter = "0000000000000000"
+	}
+
+	c := Control{
+		messageType: "C",
+		fourCC:      "AMUT",
+		parameter:   parameter,
+	}
+	ans, err := d.sendControlMessage(&c)
+	if err != nil {
+		return err
+	}
+
+	if ans.IsError() {
+		return errors.New("the display returned an error")
+	}
+	return nil
+}
+
+func (d *Display) GetAudioMute() (bool, error){
+	c := Control{
+		messageType: "E",
+		fourCC:      "AMUT",
+		parameter:   "################",
+	}
+	ans, err := d.sendControlMessage(&c)
+	if err != nil {
+		return false, err
+	}
+	if ans.IsError() {
+		return false, errors.New("the display returned an error")
+	}
+
+	if ans.GetParameter() == "0000000000000001"{
+		return true, nil
+	}
+	if ans.GetParameter() == "0000000000000000"{
+		return false, nil
+	}
+	return false, nil
+}
+
 
 func (d *Display) SetInput(source inputsource.InputSource, number uint) error {
 

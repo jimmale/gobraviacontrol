@@ -24,8 +24,8 @@ Due to the current pandemic, I do not have access to an _actual_ display to test
 - [x] togglePowerStatus
 - [x] setAudioVolume
 - [x] getAudioVolume
-- [ ] setAudioMute
-- [ ] getAudioMute
+- [x] setAudioMute
+- [x] getAudioMute
 - [x] setInput
 - [ ] getInput
 - [ ] setPictureMute

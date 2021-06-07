@@ -1,4 +1,4 @@
-# gobraviacontrol
+# gobraviacontrol (Work in Progress)
 An Unofficial GoLang API for Sony Bravia Professional Displays
 
 This library is not affiliated with Sony, not endorsed by Sony, and not supported by Sony.  

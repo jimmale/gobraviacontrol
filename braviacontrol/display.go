@@ -110,7 +110,6 @@ func (d *Display) sendControlMessage(message *Control) (*Answer, error) {
 	return answer, nil
 }
 
-
 // ╔═════════════════════════════════════════════════════════════════════════╗
 // ║                     Commands provided by the display                    ║
 // ╚═════════════════════════════════════════════════════════════════════════╝
@@ -149,7 +148,7 @@ func (d *Display) SetPowerStatus(status powerstatus.PowerStatus) error {
 	return nil
 }
 
-func (d *Display) GetPowerStatus() (powerstatus.PowerStatus, error){
+func (d *Display) GetPowerStatus() (powerstatus.PowerStatus, error) {
 	c := Control{
 		messageType: "E",
 		fourCC:      "POWR",
@@ -163,10 +162,10 @@ func (d *Display) GetPowerStatus() (powerstatus.PowerStatus, error){
 	if ans.IsError() {
 		return powerstatus.ERROR, errors.New("the display returned an error")
 	}
-	if ans.GetParameter() == string(powerstatus.POWER_ON){
+	if ans.GetParameter() == string(powerstatus.POWER_ON) {
 		return powerstatus.POWER_ON, nil
 	}
-	if ans.GetParameter() == string(powerstatus.POWER_OFF){
+	if ans.GetParameter() == string(powerstatus.POWER_OFF) {
 		return powerstatus.POWER_OFF, nil
 	}
 	return powerstatus.ERROR, errors.New("the display returned a malformed response")
@@ -229,6 +228,53 @@ func (d *Display) GetAudioVolume() (uint, error) {
 	return uint(result), err
 }
 
+func (d *Display) SetAudioMute(mute bool) error {
+
+	var parameter string
+	if mute {
+		parameter = "0000000000000001"
+	} else {
+		parameter = "0000000000000000"
+	}
+
+	c := Control{
+		messageType: "C",
+		fourCC:      "AMUT",
+		parameter:   parameter,
+	}
+	ans, err := d.sendControlMessage(&c)
+	if err != nil {
+		return err
+	}
+
+	if ans.IsError() {
+		return errors.New("the display returned an error")
+	}
+	return nil
+}
+
+func (d *Display) GetAudioMute() (bool, error) {
+	c := Control{
+		messageType: "E",
+		fourCC:      "AMUT",
+		parameter:   "################",
+	}
+	ans, err := d.sendControlMessage(&c)
+	if err != nil {
+		return false, err
+	}
+	if ans.IsError() {
+		return false, errors.New("the display returned an error")
+	}
+
+	if ans.GetParameter() == "0000000000000001" {
+		return true, nil
+	}
+	if ans.GetParameter() == "0000000000000000" {
+		return false, nil
+	}
+	return false, nil
+}
 
 func (d *Display) SetInput(source inputsource.InputSource, number uint) error {
 
